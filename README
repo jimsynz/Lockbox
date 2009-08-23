@@ -1,0 +1,75 @@
+Lockbox
+=======
+
+Lockbox is a simple rails plugin that let's you use public key crypto
+to encrypt and decrypt strings.
+This is just a quick hack, I decided not to go for anything more
+elaborate because it met the minimum requirements of what I'm building
+and nothing more.
+
+Example
+=======
+
+Use openssl to generate the keys:
+
+# openssl genrsa -des3 -out private.pem 2048
+Generating RSA private key, 2048 bit long modulus
+..................................................................................................................+++
+..........+++
+e is 65537 (0x10001)
+Enter pass phrase for private.pem:
+Verifying - Enter pass phrase for private.pem:
+# openssl rsa -in private.pem -out public.pem -outform PEM -pubout
+Enter pass phrase for private.pem:
+writing RSA key
+
+Next, move the private and public key files into $RAILS_ROOT/config/ and
+configure Lockbox:
+
+mv public.pem private.pem config/
+cat <<EOF > config/lockbox.yml
+development:
+  public: config/public.pem
+  private: config/private.pem
+
+testing:
+  public: vendor/plugins/lockbox/test/public.pem
+  private: vendor/plugins/lockbox/test/private.pem
+  pass_phrase: test
+
+production:
+  public: config/public.pem
+  private: config/private.pem
+EOF
+
+You might wish to stop your Rails application from running, and display
+a passphrase entry dialogue if the Lockbox hasn't been unlocked:
+
+class ApplicationController < ActionController::Base
+
+  before_filter :unlock_box
+
+  def unlock_box
+    if Lockbox.locked?
+      redirect_to :controller => 'unlock', :action => 'prompt'
+    end
+  end
+
+end
+
+You can use lockbox in your model by overloading your getter and 
+setter methods:
+
+class User < ActiveRecord::Base
+
+  def password=(val)
+    write_attribute :password Lockbox.encrypt(val)
+  end
+
+  def password
+    Lockbox.decrypt(read_attribute :password)
+  end
+
+end
+
+Copyright (c) 2009 James Harton, released under the Mozilla Public License version 1.1 
