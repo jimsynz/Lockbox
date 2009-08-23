@@ -31,6 +31,12 @@ class Lockbox
     end
   end
 
+  def self.lock!
+    @@public_key = nil
+    @@private_key = nil
+    @locked == true
+  end
+
   def self.encrypt(val)
     if locked?
       raise StillLockedException, "Passphrase not provided to lockbox."
