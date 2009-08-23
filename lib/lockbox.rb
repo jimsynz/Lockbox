@@ -16,8 +16,7 @@ class Lockbox
   end
 
   def self.try? (pass_phrase)
-    #config = YAML::load_file("#{RAILS_ROOT}/config/lockbox.yml")[RAILS_ENV]
-    config = { 'public_key_path' => 'public.pem', 'private_key_path' => 'private.pem' }
+    config = YAML::load_file("#{RAILS_ROOT}/config/lockbox.yml")[RAILS_ENV]
     if pass_phrase.nil? and config['pass_phrase'].nil?
       false
     else

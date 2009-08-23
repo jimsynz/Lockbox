@@ -6,6 +6,9 @@ to encrypt and decrypt strings.
 This is just a quick hack, I decided not to go for anything more
 elaborate because it met the minimum requirements of what I'm building
 and nothing more.
+You can always get the latest version of this plugin from Github:
+  - http://github.com/jamesotron/Lockbox/tree/master [web url]
+  - git://github.com/jamesotron/Lockbox.git [clone url]
 
 Example
 =======
