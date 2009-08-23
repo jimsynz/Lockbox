@@ -32,17 +32,17 @@ configure Lockbox:
 mv public.pem private.pem config/
 cat <<EOF > config/lockbox.yml
 development:
-  public: config/public.pem
-  private: config/private.pem
+  public_key_path: config/public.pem
+  private_key_path: config/private.pem
 
 testing:
-  public: vendor/plugins/lockbox/test/public.pem
-  private: vendor/plugins/lockbox/test/private.pem
+  public_key_path: vendor/plugins/lockbox/test/public.pem
+  private_key_path: vendor/plugins/lockbox/test/private.pem
   pass_phrase: test
 
 production:
-  public: config/public.pem
-  private: config/private.pem
+  public_key_path: config/public.pem
+  private_key_path: config/private.pem
 EOF
 
 You might wish to stop your Rails application from running, and display
@@ -60,18 +60,12 @@ class ApplicationController < ActionController::Base
 
 end
 
-You can use lockbox in your model by overloading your getter and 
-setter methods:
+You can use lockbox in your model by using the acts_as_lockbox class
+method:
 
 class User < ActiveRecord::Base
 
-  def password=(val)
-    write_attribute :password, Lockbox.encrypt(val)
-  end
-
-  def password
-    Lockbox.decrypt(read_attribute :password)
-  end
+  acts_as_lockbox :for => [ :password, :credit_card_number ]
 
 end
 
