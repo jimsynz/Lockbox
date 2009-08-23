@@ -66,7 +66,7 @@ setter methods:
 class User < ActiveRecord::Base
 
   def password=(val)
-    write_attribute :password Lockbox.encrypt(val)
+    write_attribute :password, Lockbox.encrypt(val)
   end
 
   def password
