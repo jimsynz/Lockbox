@@ -10,6 +10,13 @@ You can always get the latest version of this plugin from Github:
   - http://github.com/jamesotron/Lockbox/tree/master [web url]
   - git://github.com/jamesotron/Lockbox.git [clone url]
 
+If you're using Lockbox in production please email me and give me your
+feedback to james@mashd.cc.  Feel free to fork Lockbox on github and
+or send me patches, I'm always interested in use cases.
+
+Lockbox is released under the Mozilla MPL 1.1, all code is copyright
+2009 James Harton.
+
 Example
 =======
 
