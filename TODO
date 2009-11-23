@@ -1,0 +1,7 @@
+Lockbox TODO List:
+==================
+
+Currently Lockbox is great for keeping Application-wide secrets, however I
+would love to add functionality for adding per-user or per-group secrets
+by passing in a user's public key to the lock() and unlock() methods.
+I would also love to see a way of encrypting the same message to multiple recipients, this will take a wee bit more work.
