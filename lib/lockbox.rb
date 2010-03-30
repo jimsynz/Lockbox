@@ -1,5 +1,6 @@
 require 'openssl'
 require 'base64'
+require 'digest/sha2'
 
 class Lockbox
 
@@ -15,7 +16,8 @@ class Lockbox
     return !@@locked
   end
 
-  def self.try? (pass_phrase)
+  def self.try? (pass_phrase, once=false)
+    @@once = once
     @@config ||= YAML::load_file("#{RAILS_ROOT}/config/lockbox.yml")[RAILS_ENV]
     if pass_phrase.nil? and @@config['pass_phrase'].nil?
       false
@@ -45,7 +47,13 @@ class Lockbox
           return false
         end
       end
-      Base64.encode64(@@public_key.public_encrypt(val))
+      # hash the value to make sure that it can't be modified
+      # since we might potentially have to split the value
+      # into chunks.
+      hash = Digest::SHA2.new(256)
+      hash << val
+      max_size = (@@public_key.n.to_i.to_s(2).size / 8) - 11
+      (([ hash.to_s ] +  val.scan(Regexp.new ".{1,#{max_size}}")).collect { |part| @@public_key.public_encrypt(part) }).to_yaml
     end
   end
 
@@ -53,11 +61,29 @@ class Lockbox
     if locked?
       raise StillLockedException, "Passphrase not provided to lockbox."
     elsif val.is_a? String
-      @@private_key.private_decrypt(Base64.decode64(val))
+      yaml = YAML::load(val)
+      if (yaml.is_a? Array) && (yaml.size > 1)
+        decrypted = yaml.collect { |part| @@private_key.private_decrypt(part) }
+        hash = decrypted[0]
+        value = decrypted[1..-1] * ""
+        check = Digest::SHA2.new(256)
+        check << value
+        if check.to_s == hash
+          decoded = value
+        else
+          raise HashVerificationFailed, "SHA2 hash digest mismatch."
+        end
+      elsif yaml.is_a? String
+        decoded = @@private_key.private_decrypt(Base64.decode64(val))
+      end
+      lock! if @@once
+      decoded
     end
   end
 
 end
 
 class StillLockedException < RuntimeError
+end
+class HashVerificationFailedException < RuntimeError
 end
