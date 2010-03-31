@@ -71,7 +71,7 @@ class Lockbox
         if check.to_s == hash
           decoded = value
         else
-          raise HashVerificationFailed, "SHA2 hash digest mismatch."
+          raise HashVerificationFailedException, "SHA2 hash digest mismatch."
         end
       elsif yaml.is_a? String
         decoded = @@private_key.private_decrypt(Base64.decode64(val))
