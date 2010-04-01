@@ -53,7 +53,7 @@ class Lockbox
       hash = Digest::SHA2.new(256)
       hash << val
       max_size = (@@public_key.n.to_i.to_s(2).size / 8) - 11
-      (([ hash.to_s ] +  val.scan(Regexp.new ".{1,#{max_size}}")).collect { |part| @@public_key.public_encrypt(part) }).to_yaml
+      (([ hash.to_s ] + val.chunk(max_size)).collect { |part| @@public_key.public_encrypt(part) }).to_yaml
     end
   end
 
@@ -65,7 +65,7 @@ class Lockbox
       if (yaml.is_a? Array) && (yaml.size > 1)
         decrypted = yaml.collect { |part| @@private_key.private_decrypt(part) }
         hash = decrypted[0]
-        value = decrypted[1..-1] * ""
+        value = decrypted[1..-1].join
         check = Digest::SHA2.new(256)
         check << value
         if check.to_s == hash
@@ -86,4 +86,12 @@ end
 class StillLockedException < RuntimeError
 end
 class HashVerificationFailedException < RuntimeError
+end
+
+# taken from http://stackoverflow.com/questions/754407/what-is-the-best-way-to-chop-a-string-into-chunks-of-a-given-length-in-ruby
+# because scan() doesn't work with \n's etc.
+class String
+  def chunk(size)
+    (0..(self.length-1)/size).map{|i|self[i*size,size]}
+  end
 end
